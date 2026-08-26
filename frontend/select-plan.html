@@ -132,31 +132,31 @@
     await loadPlans();
   })();
 
-  // Registro mejorado de service worker para iOS
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then((registration) => {
-        console.log('[SW] Service Worker registrado:', registration.scope);
-        
-        if (registration.waiting) {
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
-        
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[SW] Nueva versión disponible');
-            }
-          });
-        });
-      })
-      .catch((err) => {
-        console.error('[SW] Error registrando service worker:', err);
-      });
-  } else {
-    console.warn('[SW] Service Worker no soportado en este navegador');
-  }
+  // Service worker deshabilitado completamente para evitar problemas de cache
+  // if ('serviceWorker' in navigator) {
+  //   navigator.serviceWorker.register('service-worker.js')
+  //     .then((registration) => {
+  //       console.log('[SW] Service Worker registrado:', registration.scope);
+  //       
+  //       if (registration.waiting) {
+  //         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+  //       }
+  //       
+  //       registration.addEventListener('updatefound', () => {
+  //         const newWorker = registration.installing;
+  //         newWorker.addEventListener('statechange', () => {
+  //           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+  //             console.log('[SW] Nueva versión disponible');
+  //           }
+  //         });
+  //       });
+  //     })
+  //     .catch((err) => {
+  //       console.error('[SW] Error registrando service worker:', err);
+  //     });
+  // } else {
+  //   console.warn('[SW] Service Worker no soportado en este navegador');
+  // }
 
   initThemeToggle();
 </script>
