@@ -36,7 +36,7 @@ app.use(
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 app.use(sanitizeInput);
-app.use(generalLimiter);
+// app.use(generalLimiter); // Temporalmente deshabilitado para pruebas en producción
 // app.use(verifyCsrf); // Temporalmente deshabilitado para pruebas en producción
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
