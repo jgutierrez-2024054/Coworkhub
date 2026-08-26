@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CoworkHub" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
+<title>CoWork Hub - Espacios</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="stylesheet" href="css/styles.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">CoworkHub</div>
+  <nav id="nav"></nav>
+  <button id="themeToggle" class="theme-toggle">
+    <img src="img/claro.png" alt="Modo claro" />
+  </button>
+</header>
+<main>
+  <div class="hero">
+    <h1>Espacios de coworking</h1>
+    <p>Reserva escritorios, salas de reuniones y espacios para eventos en un entorno profesional y moderno.</p>
+  </div>
+  
+  <div id="alertBox"></div>
+
+  <div class="card">
+    <h3>Nueva reserva</h3>
+    <form id="reserveForm">
+      <div>
+        <label>Espacio</label>
+        <select id="spaceSelect" required></select>
+      </div>
+      <div>
+        <label>Inicio</label>
+        <input type="datetime-local" id="startsAt" required />
+      </div>
+      <div>
+        <label>Fin</label>
+        <input type="datetime-local" id="endsAt" required />
+      </div>
+      <button type="submit">Reservar espacio</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Espacios disponibles</h3>
+    <div class="grid" id="spacesGrid"></div>
+  </div>
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+  window.PAGE = 'index';
+  const alertBox = document.getElementById('alertBox');
+
+  async function loadSpaces() {
+    const spaces = await api.availableSpaces();
+    const grid = document.getElementById('spacesGrid');
+    const select = document.getElementById('spaceSelect');
+    select.innerHTML = '';
+    
+    // Guardar espacios en una variable global para verificar tipos
+    window.availableSpaces = spaces;
+    
+    // Mapeo de tipos de espacio a imágenes por defecto
+    const defaultImages = {
+      'desk': ['img/desk.jpg', 'img/desk 2.jpg', 'img/desk 3.jpg'],
+      'meeting_room': ['img/meeting_room.webp', 'img/meeting_room 2.jpg', 'img/meeting_room 3.jpg'],
+      'event_room': ['img/event_room 1.jpg', 'img/event_room 2.jpg']
+    };
+    
+    // Mapeo de tipos de espacio a nombres en español
+    const typeNames = {
+      'desk': 'Escritorio',
+      'meeting_room': 'Sala de reuniones',
+      'event_room': 'Sala de eventos'
+    };
+    
+    grid.innerHTML = spaces.map((s, index) => {
+      const images = s.imageUrl ? [s.imageUrl] : defaultImages[s.type];
+      const isCarousel = images.length > 1;
+      
+      if (isCarousel) {
+        // Carrusel para espacios con múltiples imágenes
+        return `
+          <div class="card">
+            <div class="carousel" data-space-index="${index}">
+              <div class="carousel-inner">
+                ${images.map((img, i) => `
+                  <img 
+                    src="${img}" 
+                    alt="${s.name}" 
+                    class="carousel-item ${i === 0 ? 'active' : ''}"
+                    data-index="${i}"
+                    onerror="this.src='img/desk.jpg'"
+                  />
+                `).join('')}
+              </div>
+              ${images.length > 1 ? `
+                <button class="carousel-btn prev" onclick="prevSlide(${index})">&#10094;</button>
+                <button class="carousel-btn next" onclick="nextSlide(${index})">&#10095;</button>
+              ` : ''}
+            </div>
+            <h3>${s.name}</h3>
+            <div style="margin-bottom: var(--space-3);">
+              <span class="feature-tag">${typeNames[s.type] || s.type}</span>
+              <span class="feature-tag">Capacidad: ${s.capacity}</span>
+            </div>
+            <p class="price">Q${Number(s.hourlyRate).toFixed(2)} <span>/ hora</span></p>
+          </div>
+        `;
+      } else {
+        // Imagen única para otros tipos
+        const imageUrl = images[0];
+        return `
+          <div class="card">
+            <img 
+              src="${imageUrl}" 
+              alt="${s.name}" 
+              style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius-md); margin-bottom: var(--space-4);"
+              onerror="this.src='img/desk.jpg'"
+            />
+            <h3>${s.name}</h3>
+            <div style="margin-bottom: var(--space-3);">
+              <span class="feature-tag">${typeNames[s.type] || s.type}</span>
+              <span class="feature-tag">Capacidad: ${s.capacity}</span>
+            </div>
+            <p class="price">Q${Number(s.hourlyRate).toFixed(2)} <span>/ hora</span></p>
+          </div>
+        `;
+      }
+    }).join('') || '<p style="color:var(--text-muted); text-align:center; padding: var(--space-8);">No hay espacios activos por ahora.</p>';
+
+    spaces.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = `${s.name} (${typeNames[s.type] || s.type})`;
+      opt.dataset.type = s.type; // Guardar tipo en dataset
+      select.appendChild(opt);
+    });
+  }
+
+  // Funciones para el carrusel
+  function nextSlide(spaceIndex) {
+    const carousel = document.querySelector(`.carousel[data-space-index="${spaceIndex}"]`);
+    const items = carousel.querySelectorAll('.carousel-item');
+    const activeIndex = Array.from(items).findIndex(item => item.classList.contains('active'));
+    const nextIndex = (activeIndex + 1) % items.length;
+    
+    items[activeIndex].classList.remove('active');
+    items[nextIndex].classList.add('active');
+  }
+
+  function prevSlide(spaceIndex) {
+    const carousel = document.querySelector(`.carousel[data-space-index="${spaceIndex}"]`);
+    const items = carousel.querySelectorAll('.carousel-item');
+    const activeIndex = Array.from(items).findIndex(item => item.classList.contains('active'));
+    const prevIndex = (activeIndex - 1 + items.length) % items.length;
+    
+    items[activeIndex].classList.remove('active');
+    items[prevIndex].classList.add('active');
+  }
+
+  document.getElementById('reserveForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAlert(alertBox);
+    
+    try {
+      const spaceId = Number(document.getElementById('spaceSelect').value);
+      const selectedOption = document.getElementById('spaceSelect').selectedOptions[0];
+      const spaceType = selectedOption.dataset.type;
+      
+      // Verificar si el usuario tiene plan
+      const user = await api.me();
+      
+      // Si el espacio es sala de reuniones o eventos y no tiene plan, pedir que compre uno
+      if ((spaceType === 'meeting_room' || spaceType === 'event_room') && !user.plan) {
+        showAlert(alertBox, 'Para reservar salas de reuniones o eventos necesitas adquirir un plan. Redirigiendo...', 'warning');
+        setTimeout(() => {
+          window.location.href = 'select-plan.html';
+        }, 2000);
+        return;
+      }
+      
+      await api.createReservation({
+        spaceId: spaceId,
+        startsAt: new Date(document.getElementById('startsAt').value).toISOString(),
+        endsAt: new Date(document.getElementById('endsAt').value).toISOString(),
+      });
+      showAlert(alertBox, 'Reserva creada con exito.', 'success');
+      e.target.reset();
+    } catch (err) {
+      showAlert(alertBox, err.message || 'No se pudo crear la reserva.');
+    }
+  });
+
+  (async () => {
+    const user = await guardPage({ requireAuth: true });
+    if (!user) return;
+    await loadSpaces();
+    initThemeToggle();
+    
+    // Registro mejorado de service worker para iOS
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.register('service-worker.js');
+        console.log('[SW] Service Worker registrado:', registration.scope);
+        
+        // Esperar a que el service worker esté activo
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        
+        // Verificar actualizaciones
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[SW] Nueva versión disponible');
+            }
+          });
+        });
+      } catch (err) {
+        console.error('[SW] Error registrando service worker:', err);
+      }
+    } else {
+      console.warn('[SW] Service Worker no soportado en este navegador');
+    }
+  })();
+</script>
+</body>
+</html>

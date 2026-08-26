@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CoworkHub" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
+<title>CoWork Hub - Administración</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="stylesheet" href="css/styles.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">CoworkHub · Admin</div>
+  <nav id="nav"></nav>
+  <button id="themeToggle" class="theme-toggle">
+    <img src="img/claro.png" alt="Modo claro" />
+  </button>
+</header>
+<main>
+  <h1>Administración</h1>
+  <div id="alertBox"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="spaces">Espacios</button>
+    <button class="tab" data-tab="plans">Planes</button>
+    <button class="tab" data-tab="members">Miembros</button>
+    <button class="tab" data-tab="reports">Reportes</button>
+  </div>
+
+  <section id="tab-spaces">
+    <div class="card">
+      <h3 id="spaceFormTitle">Nuevo espacio</h3>
+      <form id="spaceForm">
+        <input type="hidden" id="spaceId" />
+        <div><label>Nombre</label><input type="text" id="spaceName" required /></div>
+        <div>
+          <label>Tipo</label>
+          <select id="spaceType">
+            <option value="desk">Escritorio</option>
+            <option value="meeting_room">Sala de reuniones</option>
+            <option value="event_room">Sala de eventos</option>
+          </select>
+        </div>
+        <div><label>Capacidad</label><input type="number" id="spaceCapacity" min="1" required /></div>
+        <div><label>Tarifa por hora (Q)</label><input type="number" id="spaceRate" min="0" step="0.01" required /></div>
+        <div>
+          <label>URL de imagen (opcional)</label>
+          <input type="url" id="spaceImageUrl" placeholder="https://ejemplo.com/imagen.jpg" />
+          <small style="color:var(--text-muted); font-size:0.8125rem;">Deja vacío para usar imagen por defecto según tipo</small>
+        </div>
+        <button type="submit" id="spaceSubmitBtn">Crear espacio</button>
+        <button type="button" id="spaceCancelBtn" class="secondary" style="display:none;" onclick="resetSpaceForm()">Cancelar</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Espacios existentes</h3>
+      <table>
+        <thead><tr><th>Imagen</th><th>Nombre</th><th>Tipo</th><th>Capacidad</th><th>Tarifa</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="spacesBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-plans" style="display:none;">
+    <div class="card">
+      <h3>Nuevo plan</h3>
+      <form id="planForm">
+        <div><label>Nombre</label><input type="text" id="planName" required /></div>
+        <div><label>Precio (Q)</label><input type="number" id="planPrice" min="0" step="0.01" required /></div>
+        <div><label>Horas incluidas / mes</label><input type="number" id="planHours" min="1" required /></div>
+        <div>
+          <label>Tipos de espacio permitidos</label>
+          <select id="planTypes" multiple size="3">
+            <option value="desk">Escritorio</option>
+            <option value="meeting_room">Sala de reuniones</option>
+            <option value="event_room">Sala de eventos</option>
+          </select>
+        </div>
+        <button type="submit">Crear plan</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Planes existentes</h3>
+      <table>
+        <thead><tr><th>Nombre</th><th>Precio</th><th>Horas</th><th>Espacios permitidos</th></tr></thead>
+        <tbody id="plansBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-members" style="display:none;">
+    <div class="card">
+      <h3>Miembros</h3>
+      <table>
+        <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Plan</th><th></th></tr></thead>
+        <tbody id="membersBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-reports" style="display:none;">
+    <div class="card">
+      <h3>Reservas filtradas</h3>
+      <div class="filters">
+        <div><label>Miembro</label><select id="filterMember"><option value="">Todos</option></select></div>
+        <div><label>Espacio</label><select id="filterSpace"><option value="">Todos</option></select></div>
+        <div><label>Desde</label><input type="date" id="filterFrom" /></div>
+        <div><label>Hasta</label><input type="date" id="filterTo" /></div>
+        <div style="justify-content:flex-end;"><button id="filterBtn" style="margin-top:18px;">Filtrar</button></div>
+      </div>
+      <table>
+        <thead><tr><th>Miembro</th><th>Espacio</th><th>Inicio</th><th>Fin</th><th>Estado</th></tr></thead>
+        <tbody id="reportBody"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Consumo / facturación mensual</h3>
+      <div class="filters">
+        <div><label>Miembro</label><select id="consumoMember"></select></div>
+        <div><label>Mes</label><input type="month" id="consumoMonth" /></div>
+        <div style="justify-content:flex-end;"><button id="consumoBtn" style="margin-top:18px;">Consultar</button></div>
+      </div>
+      <div id="consumoDetails" style="display:none; margin-top: var(--space-6);">
+        <div class="invoice-preview">
+          <div class="invoice-header">
+            <h4>Factura</h4>
+            <p class="invoice-number">Factura #<span id="invoiceNumber"></span></p>
+          </div>
+          <div class="invoice-info">
+            <div class="invoice-section">
+              <h5>Cliente</h5>
+              <p><strong>Nombre:</strong> <span id="invoiceClientName"></span></p>
+              <p><strong>Correo:</strong> <span id="invoiceClientEmail"></span></p>
+              <p><strong>Rol:</strong> <span id="invoiceClientRole"></span></p>
+            </div>
+            <div class="invoice-section">
+              <h5>Plan</h5>
+              <p><strong>Plan:</strong> <span id="invoicePlanName"></span></p>
+              <p><strong>Precio mensual:</strong> Q<span id="invoicePlanPrice"></span></p>
+              <p><strong>Horas incluidas:</strong> <span id="invoicePlanHours"></span>h</p>
+            </div>
+            <div class="invoice-section">
+              <h5>Periodo</h5>
+              <p><strong>Mes:</strong> <span id="invoiceMonth"></span></p>
+              <p><strong>Horas consumidas:</strong> <span id="invoiceHours"></span>h</p>
+              <p><strong>Horas extra:</strong> <span id="invoiceExtraHours"></span>h</p>
+            </div>
+          </div>
+          <div class="invoice-total">
+            <p><strong>Total a pagar:</strong> Q<span id="invoiceTotal"></span></p>
+          </div>
+          <button id="printInvoiceBtn" class="primary">Imprimir Factura</button>
+        </div>
+      </div>
+      <p id="consumoResult" style="color:var(--text-muted);"></p>
+    </div>
+  </section>
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+  window.PAGE = 'admin';
+  const alertBox = document.getElementById('alertBox');
+  let spacesCache = [];
+  let membersCache = [];
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      ['spaces', 'plans', 'members', 'reports'].forEach(name => {
+        document.getElementById('tab-' + name).style.display = (name === tab.dataset.tab) ? 'block' : 'none';
+      });
+    });
+  });
+
+  async function loadSpaces() {
+    spacesCache = await api.allSpaces();
+    
+    // Mapeo de tipos de espacio a imágenes por defecto
+    const defaultImages = {
+      'desk': 'img/desk.jpg',
+      'meeting_room': 'img/meeting_room.webp',
+      'event_room': 'img/event_room.jpg'
+    };
+    
+    document.getElementById('spacesBody').innerHTML = spacesCache.map(s => {
+      const imageUrl = s.imageUrl || defaultImages[s.type];
+      return `
+        <tr>
+          <td>
+            <img 
+              src="${imageUrl}" 
+              alt="${s.name}" 
+              style="width: 60px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"
+              onerror="this.src='img/desk.jpg'"
+            />
+          </td>
+          <td>${s.name}</td>
+          <td>${s.type}</td>
+          <td>${s.capacity}</td>
+          <td>Q${Number(s.hourlyRate).toFixed(2)}</td>
+          <td><span class="badge ${s.active ? 'active' : 'inactive'}">${s.active ? 'Activo' : 'Inactivo'}</span></td>
+          <td>
+            <button data-edit="${s.id}">Editar</button>
+            ${s.active ? `<button class="danger" data-deactivate="${s.id}">Dar de baja</button>` : ''}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const filterSpace = document.getElementById('filterSpace');
+    filterSpace.innerHTML = '<option value="">Todos</option>' +
+      spacesCache.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+    document.querySelectorAll('button[data-deactivate]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await api.deactivateSpace(btn.dataset.deactivate).catch(err => showAlert(alertBox, err.message));
+        await loadSpaces();
+      });
+    });
+
+    document.querySelectorAll('button[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => editSpace(btn.dataset.edit));
+    });
+  }
+
+  async function loadPlans() {
+    const plans = await api.plans();
+    document.getElementById('plansBody').innerHTML = plans.map(p => `
+      <tr><td>${p.name}</td><td>Q${Number(p.price).toFixed(2)}</td><td>${p.includedHours}h</td><td>${p.allowedSpaceTypes.join(', ')}</td></tr>
+    `).join('');
+    return plans;
+  }
+
+  async function loadMembers(plans) {
+    membersCache = await api.members();
+    const planOptions = plans.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+    document.getElementById('membersBody').innerHTML = membersCache.map(m => `
+      <tr>
+        <td>${m.name}</td><td>${m.email}</td><td>${m.role}</td>
+        <td>
+          ${m.role === 'admin' ? '—' : `
+            <select data-assign="${m.id}">
+              <option value="">Sin plan</option>
+              ${planOptions}
+            </select>`}
+        </td>
+        <td></td>
+      </tr>
+    `).join('');
+
+    document.querySelectorAll('select[data-assign]').forEach(sel => {
+      const member = membersCache.find(m => m.id === Number(sel.dataset.assign));
+      if (member?.plan) sel.value = member.plan.id;
+      sel.addEventListener('change', async () => {
+        if (!sel.value) return;
+        try {
+          await api.assignPlan(sel.dataset.assign, Number(sel.value));
+        } catch (err) {
+          showAlert(alertBox, err.message || 'No se pudo asignar el plan.');
+        }
+      });
+    });
+
+    const filterMember = document.getElementById('filterMember');
+    const consumoMember = document.getElementById('consumoMember');
+    const onlyMembers = membersCache.filter(m => m.role === 'member');
+    filterMember.innerHTML = '<option value="">Todos</option>' +
+      onlyMembers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    consumoMember.innerHTML = onlyMembers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  }
+
+  document.getElementById('spaceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAlert(alertBox);
+    const spaceId = document.getElementById('spaceId').value;
+    const isEdit = !!spaceId;
+    
+    try {
+      const spaceData = {
+        name: document.getElementById('spaceName').value,
+        type: document.getElementById('spaceType').value,
+        capacity: Number(document.getElementById('spaceCapacity').value),
+        hourlyRate: Number(document.getElementById('spaceRate').value),
+        imageUrl: document.getElementById('spaceImageUrl').value || null,
+      };
+      
+      if (isEdit) {
+        await api.updateSpace(spaceId, spaceData);
+        showAlert(alertBox, 'Espacio actualizado correctamente.', 'success');
+      } else {
+        await api.createSpace(spaceData);
+        showAlert(alertBox, 'Espacio creado correctamente.', 'success');
+      }
+      
+      resetSpaceForm();
+      await loadSpaces();
+    } catch (err) { showAlert(alertBox, err.message || 'No se pudo guardar el espacio.'); }
+  });
+
+  function editSpace(spaceId) {
+    const space = spacesCache.find(s => s.id === Number(spaceId));
+    if (!space) return;
+    
+    document.getElementById('spaceFormTitle').textContent = 'Editar espacio';
+    document.getElementById('spaceId').value = space.id;
+    document.getElementById('spaceName').value = space.name;
+    document.getElementById('spaceType').value = space.type;
+    document.getElementById('spaceCapacity').value = space.capacity;
+    document.getElementById('spaceRate').value = space.hourlyRate;
+    document.getElementById('spaceImageUrl').value = space.imageUrl || '';
+    document.getElementById('spaceSubmitBtn').textContent = 'Actualizar espacio';
+    document.getElementById('spaceCancelBtn').style.display = 'inline-block';
+    
+    // Scroll al formulario
+    document.querySelector('#tab-spaces .card').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function resetSpaceForm() {
+    document.getElementById('spaceFormTitle').textContent = 'Nuevo espacio';
+    document.getElementById('spaceId').value = '';
+    document.getElementById('spaceName').value = '';
+    document.getElementById('spaceType').value = 'desk';
+    document.getElementById('spaceCapacity').value = '';
+    document.getElementById('spaceRate').value = '';
+    document.getElementById('spaceImageUrl').value = '';
+    document.getElementById('spaceSubmitBtn').textContent = 'Crear espacio';
+    document.getElementById('spaceCancelBtn').style.display = 'none';
+  }
+
+  document.getElementById('planForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAlert(alertBox);
+    const selected = Array.from(document.getElementById('planTypes').selectedOptions).map(o => o.value);
+    try {
+      await api.createPlan({
+        name: document.getElementById('planName').value,
+        price: Number(document.getElementById('planPrice').value),
+        includedHours: Number(document.getElementById('planHours').value),
+        allowedSpaceTypes: selected,
+      });
+      e.target.reset();
+      const plans = await loadPlans();
+      await loadMembers(plans);
+    } catch (err) { showAlert(alertBox, err.message || 'No se pudo crear el plan.'); }
+  });
+
+  document.getElementById('filterBtn').addEventListener('click', async () => {
+    const rows = await api.reportReservations({
+      memberId: document.getElementById('filterMember').value,
+      spaceId: document.getElementById('filterSpace').value,
+      from: document.getElementById('filterFrom').value,
+      to: document.getElementById('filterTo').value,
+    });
+    document.getElementById('reportBody').innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.member?.name ?? r.memberId}</td>
+        <td>${r.space?.name ?? r.spaceId}</td>
+        <td>${new Date(r.startsAt).toLocaleString('es-GT')}</td>
+        <td>${new Date(r.endsAt).toLocaleString('es-GT')}</td>
+        <td><span class="badge ${r.status}">${r.status}</span></td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" style="color:var(--text-muted)">Sin resultados.</td></tr>';
+  });
+
+  document.getElementById('consumoBtn').addEventListener('click', async () => {
+    const memberId = document.getElementById('consumoMember').value;
+    const month = document.getElementById('consumoMonth').value;
+    if (!memberId || !month) return;
+    try {
+      const data = await api.reportConsumo(memberId, month);
+      const member = membersCache.find(m => m.id === Number(memberId));
+      
+      // Mostrar resultado simple
+      document.getElementById('consumoResult').textContent =
+        `${data.horas} horas · Q${data.monto.toFixed(2)} en ${month}`;
+      
+      // Mostrar detalles de factura
+      document.getElementById('consumoDetails').style.display = 'block';
+      
+      // Generar número de factura
+      const invoiceNum = `INV-${month.replace('-', '')}-${memberId.padStart(4, '0')}`;
+      document.getElementById('invoiceNumber').textContent = invoiceNum;
+      
+      // Datos del cliente
+      document.getElementById('invoiceClientName').textContent = member?.name || 'N/A';
+      document.getElementById('invoiceClientEmail').textContent = member?.email || 'N/A';
+      document.getElementById('invoiceClientRole').textContent = member?.role || 'N/A';
+      
+      // Datos del plan
+      const plan = member?.plan;
+      document.getElementById('invoicePlanName').textContent = plan?.name || 'Sin plan';
+      const planPrice = Number(plan?.price) || 0;
+      document.getElementById('invoicePlanPrice').textContent = planPrice.toFixed(2);
+      document.getElementById('invoicePlanHours').textContent = plan?.includedHours || '0';
+      
+      // Periodo
+      document.getElementById('invoiceMonth').textContent = month;
+      document.getElementById('invoiceHours').textContent = data.horas;
+      
+      // Calcular horas extra
+      const includedHours = plan?.includedHours || 0;
+      const extraHours = Math.max(0, data.horas - includedHours);
+      document.getElementById('invoiceExtraHours').textContent = extraHours;
+      
+      // Calcular total (usando la variable planPrice ya declarada)
+      const extraCost = extraHours * 10; // Q10 por hora extra (ajustar según tarifa real)
+      const total = planPrice + extraCost;
+      document.getElementById('invoiceTotal').textContent = total.toFixed(2);
+      
+      // Guardar datos para impresión
+      window.currentInvoiceData = {
+        invoiceNumber: invoiceNum,
+        clientName: member?.name || 'N/A',
+        clientEmail: member?.email || 'N/A',
+        clientRole: member?.role || 'N/A',
+        planName: plan?.name || 'Sin plan',
+        planPrice: planPrice,
+        planHours: plan?.includedHours || 0,
+        month: month,
+        hours: data.horas,
+        extraHours: extraHours,
+        total: total
+      };
+      
+      // Agregar event listener al botón de imprimir
+      const printBtn = document.getElementById('printInvoiceBtn');
+      if (printBtn) {
+        // Remover event listener anterior si existe
+        const newPrintBtn = printBtn.cloneNode(true);
+        printBtn.parentNode.replaceChild(newPrintBtn, printBtn);
+        
+        newPrintBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Botón de imprimir factura clickeado');
+          
+          if (!window.currentInvoiceData) {
+            showAlert(alertBox, 'No hay datos de factura para imprimir.');
+            console.log('No hay datos de factura');
+            return;
+          }
+          
+          console.log('Datos de factura:', window.currentInvoiceData);
+          
+          const data = window.currentInvoiceData;
+          
+          // Crear contenido HTML para la factura
+          const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Factura ${data.invoiceNumber}</title>
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  padding: 40px;
+                  max-width: 800px;
+                  margin: 0 auto;
+                  background: white;
+                }
+                .invoice-header {
+                  text-align: center;
+                  margin-bottom: 40px;
+                  border-bottom: 2px solid #333;
+                  padding-bottom: 20px;
+                }
+                .invoice-header h1 {
+                  margin: 0;
+                  color: #333;
+                  font-size: 28px;
+                }
+                .invoice-number {
+                  font-size: 18px;
+                  color: #666;
+                  margin-top: 10px;
+                }
+                .invoice-section {
+                  margin-bottom: 30px;
+                }
+                .invoice-section h3 {
+                  color: #333;
+                  border-bottom: 1px solid #ddd;
+                  padding-bottom: 10px;
+                  margin-bottom: 15px;
+                  font-size: 18px;
+                }
+                .invoice-row {
+                  display: flex;
+                  justify-content: space-between;
+                  margin-bottom: 10px;
+                  font-size: 14px;
+                }
+                .invoice-label {
+                  font-weight: bold;
+                  color: #555;
+                }
+                .invoice-value {
+                  color: #333;
+                }
+                .invoice-total {
+                  margin-top: 40px;
+                  padding: 20px;
+                  background: #f5f5f5;
+                  text-align: right;
+                  font-size: 24px;
+                  font-weight: bold;
+                  border: 2px solid #333;
+                }
+                .invoice-footer {
+                  margin-top: 40px;
+                  text-align: center;
+                  color: #666;
+                  font-size: 12px;
+                }
+                @media print {
+                  body {
+                    padding: 20px;
+                  }
+                  .no-print {
+                    display: none;
+                  }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="invoice-header">
+                <h1>CoworkHub</h1>
+                <p class="invoice-number">Factura #${data.invoiceNumber}</p>
+                <p>Fecha de emisión: ${new Date().toLocaleDateString('es-GT')}</p>
+              </div>
+              
+              <div class="invoice-section">
+                <h3>Información del Cliente</h3>
+                <div class="invoice-row">
+                  <span class="invoice-label">Nombre:</span>
+                  <span class="invoice-value">${data.clientName}</span>
+                </div>
+                <div class="invoice-row">
+                  <span class="invoice-label">Correo:</span>
+                  <span class="invoice-value">${data.clientEmail}</span>
+                </div>
+                <div class="invoice-row">
+                  <span class="invoice-label">Rol:</span>
+                  <span class="invoice-value">${data.clientRole}</span>
+                </div>
+              </div>
+              
+              <div class="invoice-section">
+                <h3>Información del Plan</h3>
+                <div class="invoice-row">
+                  <span class="invoice-label">Plan:</span>
+                  <span class="invoice-value">${data.planName}</span>
+                </div>
+                <div class="invoice-row">
+                  <span class="invoice-label">Precio mensual:</span>
+                  <span class="invoice-value">Q${data.planPrice.toFixed(2)}</span>
+                </div>
+                <div class="invoice-row">
+                  <span class="invoice-label">Horas incluidas:</span>
+                  <span class="invoice-value">${data.planHours}h</span>
+                </div>
+              </div>
+              
+              <div class="invoice-section">
+                <h3>Detalles del Periodo</h3>
+                <div class="invoice-row">
+                  <span class="invoice-label">Periodo:</span>
+                  <span class="invoice-value">${data.month}</span>
+                </div>
+                <div class="invoice-row">
+                  <span class="invoice-label">Horas consumidas:</span>
+                  <span class="invoice-value">${data.hours}h</span>
+                </div>
+                <div class="invoice-row">
+                  <span class="invoice-label">Horas extra:</span>
+                  <span class="invoice-value">${data.extraHours}h</span>
+                </div>
+              </div>
+              
+              <div class="invoice-total">
+                Total a pagar: Q${data.total.toFixed(2)}
+              </div>
+              
+              <div class="invoice-footer">
+                <p>CoworkHub - Gestión de espacios de coworking</p>
+                <p>Esta factura es un documento oficial de CoworkHub</p>
+              </div>
+              
+              <div class="no-print" style="text-align: center; margin-top: 30px;">
+                <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Imprimir</button>
+                <button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-left: 10px;">Cerrar</button>
+              </div>
+            </body>
+            </html>
+          `;
+          
+          console.log('Intentando abrir ventana de impresión');
+          
+          // Abrir ventana de impresión
+          const printWindow = window.open('', '_blank', 'width=800,height=600');
+          
+          if (!printWindow) {
+            showAlert(alertBox, 'No se pudo abrir la ventana de impresión. Verifica que tu navegador permita ventanas emergentes.');
+            console.log('No se pudo abrir la ventana');
+            return;
+          }
+          
+          console.log('Ventana abierta correctamente');
+          
+          printWindow.document.write(printContent);
+          printWindow.document.close();
+          
+          console.log('Contenido escrito en la ventana');
+          
+          // Esperar a que el contenido se cargue antes de imprimir
+          printWindow.onload = function() {
+            console.log('Ventana cargada, intentando imprimir');
+            setTimeout(() => {
+              printWindow.print();
+            }, 500);
+          };
+        });
+      }
+      
+    } catch (err) {
+      document.getElementById('consumoResult').textContent = err.message || 'No se pudo calcular.';
+      document.getElementById('consumoDetails').style.display = 'none';
+    }
+  });
+
+  (async () => {
+    const user = await guardPage({ requireAuth: true, requireRole: 'admin' });
+    if (!user) return;
+    await loadSpaces();
+    const plans = await loadPlans();
+    await loadMembers(plans);
+    
+    // Detectar hash #reservas para mostrar reservas pendientes
+    if (window.location.hash === '#reservas') {
+      const reportsTab = document.querySelector('.tab[data-tab="reports"]');
+      if (reportsTab) {
+        reportsTab.click();
+        // Cargar automáticamente reservas activas de todos los usuarios
+        try {
+          const rows = await api.reportReservations({});
+          const activeReservations = rows
+            .filter(r => r.status === 'active')
+            .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
+          
+          document.getElementById('reportBody').innerHTML = activeReservations.map(r => `
+            <tr>
+              <td>${r.member?.name ?? r.memberId}</td>
+              <td>${r.space?.name ?? r.spaceId}</td>
+              <td>${new Date(r.startsAt).toLocaleString('es-GT')}</td>
+              <td>${new Date(r.endsAt).toLocaleString('es-GT')}</td>
+              <td><span class="badge ${r.status}">${r.status === 'active' ? 'Pendiente' : r.status}</span></td>
+            </tr>
+          `).join('') || '<tr><td colspan="5" style="color:var(--text-muted)">No hay reservas pendientes.</td></tr>';
+        } catch (err) {
+          document.getElementById('reportBody').innerHTML = '<tr><td colspan="5" style="color:var(--danger)">Error al cargar reservas pendientes.</td></tr>';
+        }
+      }
+    }
+  })();
+
+  // Registro mejorado de service worker para iOS
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then((registration) => {
+        console.log('[SW] Service Worker registrado:', registration.scope);
+        
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[SW] Nueva versión disponible');
+            }
+          });
+        });
+      })
+      .catch((err) => {
+        console.error('[SW] Error registrando service worker:', err);
+      });
+  } else {
+    console.warn('[SW] Service Worker no soportado en este navegador');
+  }
+
+  initThemeToggle();
+</script>
+</body>
+</html>

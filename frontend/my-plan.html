@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CoworkHub" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
+<title>CoWork Hub - Mi Plan</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="stylesheet" href="css/styles.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">CoworkHub</div>
+  <nav id="nav"></nav>
+  <button id="themeToggle" class="theme-toggle">
+    <img src="img/claro.png" alt="Modo claro" />
+  </button>
+</header>
+<main>
+  <div style="text-align: center; margin-bottom: var(--space-8);">
+    <h1 style="font-size: 2rem; color: var(--text-primary); margin-bottom: var(--space-3);">Mi Plan</h1>
+    <p style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Gestión de tu plan de suscripción</p>
+  </div>
+
+  <div id="alertBox"></div>
+
+  <div id="currentPlanSection"></div>
+
+  <div style="margin-top: var(--space-10);">
+    <h2 style="font-size: 1.5rem; color: var(--text-primary); margin-bottom: var(--space-6);">Cambiar a un plan superior</h2>
+    <div class="grid" id="plansGrid"></div>
+  </div>
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+  window.PAGE = 'my-plan';
+  const alertBox = document.getElementById('alertBox');
+
+  async function loadCurrentPlan() {
+    try {
+      const user = await api.me();
+      const section = document.getElementById('currentPlanSection');
+      
+      if (!user.plan) {
+        section.innerHTML = `
+          <div class="card" style="text-align: center;">
+            <h3 style="color: var(--text-muted); margin-bottom: var(--space-3);">No tienes un plan activo</h3>
+            <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">
+              Actualmente solo puedes reservar escritorios. Adquiere un plan para acceder a salas de reuniones y eventos.
+            </p>
+            <a href="select-plan.html" style="display: inline-block; text-decoration: none;">
+              <button>Ver planes disponibles</button>
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      section.innerHTML = `
+        <div class="card" style="border-left: 4px solid var(--primary);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+            <h3 style="color: var(--primary); margin: 0;">${user.plan.name}</h3>
+            <span style="color: var(--text-primary); font-size: 1.25rem; font-weight: 700;">
+              Q${Number(user.plan.price).toFixed(2)} / mes
+            </span>
+          </div>
+          
+          <div style="margin-bottom: var(--space-4);">
+            <p style="color: var(--text-muted); margin-bottom: var(--space-2);">
+              <strong>${user.plan.includedHours} horas</strong> incluidas/mes
+            </p>
+            <p style="color: var(--text-muted); margin-bottom: var(--space-2);">
+              Espacios permitidos:
+            </p>
+            <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-5);">
+              ${user.plan.allowedSpaceTypes.map(type => {
+                const typeNames = {
+                  'desk': 'Escritorio',
+                  'meeting_room': 'Sala de reuniones',
+                  'event_room': 'Sala de eventos'
+                };
+                return `<li style="margin-bottom: var(--space-1);">${typeNames[type] || type}</li>`;
+              }).join('')}
+            </ul>
+          </div>
+          
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">
+            Para cambiar a un plan diferente, selecciona una opción abajo. El cambio se aplicará de inmediato.
+          </p>
+        </div>
+      `;
+      
+      return user.plan;
+    } catch (err) {
+      showAlert(alertBox, err.message || 'No se pudo cargar tu plan.');
+    }
+  }
+
+  async function loadAvailablePlans(currentPlan) {
+    try {
+      const plans = await api.plans();
+      const grid = document.getElementById('plansGrid');
+      
+      if (plans.length === 0) {
+        grid.innerHTML = '<p style="color:var(--text-muted); grid-column: 1/-1; text-align: center;">No hay planes disponibles.</p>';
+        return;
+      }
+
+      grid.innerHTML = plans
+        .filter(p => !currentPlan || p.id !== currentPlan.id) // No mostrar el plan actual
+        .map(p => `
+          <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+            <h3 style="color: var(--primary); margin-bottom: var(--space-2);">${p.name}</h3>
+            <p class="price" style="margin: var(--space-2) 0;">
+              Q${Number(p.price).toFixed(2)}
+              <span>/mes</span>
+            </p>
+            <div style="margin: var(--space-4) 0; flex: 1;">
+              <p style="color: var(--text-muted); margin-bottom: var(--space-2);">
+                <strong>${p.includedHours} horas</strong> incluidas/mes
+              </p>
+              <p style="color: var(--text-muted); margin-bottom: var(--space-2);">
+                Espacios permitidos:
+              </p>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-5);">
+                ${p.allowedSpaceTypes.map(type => {
+                  const typeNames = {
+                    'desk': 'Escritorio',
+                    'meeting_room': 'Sala de reuniones',
+                    'event_room': 'Sala de eventos'
+                  };
+                  return `<li style="margin-bottom: var(--space-1);">${typeNames[type] || type}</li>`;
+                }).join('')}
+              </ul>
+            </div>
+            <button 
+              onclick="changePlan(${p.id})" 
+              style="margin-top: var(--space-4); width: 100%;"
+            >
+              Cambiar a este plan
+            </button>
+          </div>
+        `).join('') || '<p style="color:var(--text-muted); grid-column: 1/-1; text-align: center;">No hay otros planes disponibles.</p>';
+    } catch (err) {
+      showAlert(alertBox, err.message || 'No se pudieron cargar los planes.');
+    }
+  }
+
+  async function changePlan(planId) {
+    clearAlert(alertBox);
+    if (!confirm('¿Estás seguro de que quieres cambiar de plan? El cambio se aplicará de inmediato.')) {
+      return;
+    }
+    
+    try {
+      await api.selectPlan(planId);
+      showAlert(alertBox, 'Plan cambiado correctamente. Recargando...', 'success');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      showAlert(alertBox, err.message || 'No se pudo cambiar el plan.');
+    }
+  }
+
+  (async () => {
+    const user = await guardPage({ requireAuth: true });
+    if (!user) return;
+    
+    const currentPlan = await loadCurrentPlan();
+    await loadAvailablePlans(currentPlan);
+  })();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then((registration) => {
+        console.log('[SW] Service Worker registrado:', registration.scope);
+        
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[SW] Nueva versión disponible');
+            }
+          });
+        });
+      })
+      .catch((err) => {
+        console.error('[SW] Error registrando service worker:', err);
+      });
+  } else {
+    console.warn('[SW] Service Worker no soportado en este navegador');
+  }
+
+  initThemeToggle();
+</script>
+</body>
+</html>
