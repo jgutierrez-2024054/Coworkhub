@@ -35,7 +35,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 app.use(sanitizeInput);
 app.use(generalLimiter);
-app.use(verifyCsrf);
+// app.use(verifyCsrf); // CSRF deshabilitado para API REST
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
