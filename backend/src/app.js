@@ -20,9 +20,6 @@ const app = express();
 // Usar 1 en lugar de true para evitar advertencias de seguridad
 app.set('trust proxy', 1);
 
-// Servir archivos estáticos del frontend
-app.use(express.static(path.join(__dirname, '../../frontend')));
-
 // Cabeceras de seguridad (mitiga varios vectores: clickjacking, sniffing, etc.)
 app.use(helmet());
 
@@ -44,6 +41,9 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 app.use('/', routes);
+
+// Servir archivos estáticos del frontend (después de rutas API)
+app.use(express.static(path.join(__dirname, '../../frontend')));
 
 app.use(notFoundHandler);
 app.use(errorHandler);
