@@ -17,7 +17,8 @@ const swaggerSpec = require('./config/swagger');
 const app = express();
 
 // Configurar trust proxy para Render (proxy reverso)
-app.set('trust proxy', true);
+// Usar 1 en lugar de true para evitar advertencias de seguridad
+app.set('trust proxy', 1);
 
 // Servir archivos estáticos del frontend
 app.use(express.static(path.join(__dirname, '../../frontend')));
