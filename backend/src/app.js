@@ -21,7 +21,22 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Cabeceras de seguridad (mitiga varios vectores: clickjacking, sniffing, etc.)
-app.use(helmet());
+// Configurado para permitir scripts inline necesarios para el frontend
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:"],
+      fontSrc: ["'self'", "https:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+}));
 
 // CORS
 app.use(
