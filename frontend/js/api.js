@@ -66,6 +66,7 @@ const api = {
   memberDetail: (id) => apiFetch(`/members/${id}`),
   assignPlan: (id, planId) => apiFetch(`/members/${id}/plan`, { method: 'PATCH', body: { planId } }),
   selectPlan: (planId) => apiFetch('/members/me/plan', { method: 'POST', body: { planId } }),
+  deleteMember: (id) => apiFetch(`/members/${id}`, { method: 'DELETE' }),
 
   myReservations: () => apiFetch('/reservations/mine'),
   createReservation: (data) => apiFetch('/reservations', { method: 'POST', body: data }),

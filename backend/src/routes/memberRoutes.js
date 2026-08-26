@@ -12,5 +12,6 @@ router.post('/me/plan', authenticate, validate(assignPlanSchema), memberControll
 router.get('/', authenticate, authorize('admin'), memberController.list);
 router.get('/:id', authenticate, authorize('admin'), memberController.detail);
 router.patch('/:id/plan', authenticate, authorize('admin'), validate(assignPlanSchema), memberController.assignPlan);
+router.delete('/:id', authenticate, authorize('admin'), memberController.deleteMember);
 
 module.exports = router;

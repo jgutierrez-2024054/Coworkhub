@@ -21,6 +21,13 @@ class MemberService {
     if (!member) throw new DomainError(404, 'Miembro no encontrado.');
     return member;
   }
+
+  async delete(id) {
+    const member = await memberRepository.findById(id);
+    if (!member) throw new DomainError(404, 'Miembro no encontrado.');
+    await memberRepository.delete(id);
+    return member;
+  }
 }
 
 module.exports = new MemberService();

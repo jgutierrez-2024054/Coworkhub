@@ -27,6 +27,13 @@ class MemberRepository {
     await member.save();
     return member;
   }
+
+  async delete(id) {
+    const member = await Member.findByPk(id);
+    if (!member) return null;
+    await member.destroy();
+    return member;
+  }
 }
 
 module.exports = new MemberRepository();

@@ -257,7 +257,11 @@
               ${planOptions}
             </select>`}
         </td>
-        <td></td>
+        <td>
+          ${m.role === 'admin' ? '—' : `
+            <button class="danger" data-delete="${m.id}" style="padding: var(--space-2) var(--space-3); font-size: 0.75rem;">Eliminar</button>
+          `}
+        </td>
       </tr>
     `).join('');
 
@@ -270,6 +274,21 @@
           await api.assignPlan(sel.dataset.assign, Number(sel.value));
         } catch (err) {
           showAlert(alertBox, err.message || 'No se pudo asignar el plan.');
+        }
+      });
+    });
+
+    document.querySelectorAll('button[data-delete]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
+          return;
+        }
+        try {
+          await api.deleteMember(btn.dataset.delete);
+          showAlert(alertBox, 'Usuario eliminado correctamente', 'success');
+          await loadMembers(await loadPlans());
+        } catch (err) {
+          showAlert(alertBox, err.message || 'No se pudo eliminar el usuario.');
         }
       });
     });

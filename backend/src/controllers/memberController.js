@@ -41,4 +41,11 @@ async function selectMyPlan(req, res, next) {
   } catch (err) { return next(err); }
 }
 
-module.exports = { list, detail, assignPlan, selectMyPlan };
+async function deleteMember(req, res, next) {
+  try {
+    const member = await memberService.delete(req.params.id);
+    return ok(res, { message: 'Usuario eliminado correctamente' });
+  } catch (err) { return next(err); }
+}
+
+module.exports = { list, detail, assignPlan, selectMyPlan, deleteMember };
