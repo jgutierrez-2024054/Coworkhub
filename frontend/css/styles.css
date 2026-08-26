@@ -516,6 +516,8 @@ button {
   transition: background-color var(--transition-fast), transform var(--transition-fast);
   font-size: 0.875rem;
   font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button:hover {

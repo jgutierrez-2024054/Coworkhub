@@ -40,8 +40,9 @@
       Podrás reservar escritorios libremente. Para reservar salas de reuniones o eventos, necesitarás adquirir un plan.
     </p>
     <button 
-      onclick="skipPlan()" 
+      id="skip-plan-btn"
       class="secondary"
+      style="min-height: 48px;"
     >
       Continuar sin plan
     </button>
@@ -90,13 +91,28 @@
             </ul>
           </div>
           <button 
-            onclick="selectPlan(${p.id})" 
-            style="margin-top: var(--space-4); width: 100%;"
+            id="plan-btn-${p.id}"
+            style="margin-top: var(--space-4); width: 100%; min-height: 48px;"
           >
             Elegir este plan
           </button>
         </div>
       `).join('');
+      
+      // Agregar event listeners para mejor interacción táctil
+      plans.forEach(p => {
+        const btn = document.getElementById(`plan-btn-${p.id}`);
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            selectPlan(p.id);
+          });
+          btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            selectPlan(p.id);
+          });
+        }
+      });
     } catch (err) {
       showAlert(alertBox, err.message || 'No se pudieron cargar los planes.');
     }
@@ -130,6 +146,19 @@
     }
     
     await loadPlans();
+    
+    // Agregar event listener para botón de continuar sin plan
+    const skipBtn = document.getElementById('skip-plan-btn');
+    if (skipBtn) {
+      skipBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        skipPlan();
+      });
+      skipBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        skipPlan();
+      });
+    }
   })();
 
   // Service worker deshabilitado completamente para evitar problemas de cache

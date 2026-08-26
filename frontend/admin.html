@@ -608,7 +608,48 @@
           
           console.log('Intentando abrir ventana de impresión');
           
-          // Abrir ventana de impresión
+          // En móvil, usar window.print() directamente con contenido modificado
+          // En desktop, abrir ventana nueva
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          
+          if (isMobile) {
+            // Para móvil: crear un div temporal con el contenido de la factura
+            const printDiv = document.createElement('div');
+            printDiv.id = 'print-content';
+            printDiv.innerHTML = printContent;
+            printDiv.style.position = 'fixed';
+            printDiv.style.top = '0';
+            printDiv.style.left = '0';
+            printDiv.style.width = '100%';
+            printDiv.style.height = '100%';
+            printDiv.style.zIndex = '9999';
+            printDiv.style.background = 'white';
+            printDiv.style.overflow = 'auto';
+            printDiv.style.padding = '20px';
+            
+            // Agregar botón de cerrar
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Cerrar';
+            closeBtn.style.position = 'fixed';
+            closeBtn.style.top = '10px';
+            closeBtn.style.right = '10px';
+            closeBtn.style.zIndex = '10000';
+            closeBtn.style.padding = '10px 20px';
+            closeBtn.style.fontSize = '16px';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.onclick = function() {
+              document.body.removeChild(printDiv);
+            };
+            
+            printDiv.appendChild(closeBtn);
+            document.body.appendChild(printDiv);
+            
+            console.log('Contenido de factura mostrado en móvil');
+            showAlert(alertBox, 'Factura generada. Usa la opción de imprimir de tu navegador.', 'success');
+            return;
+          }
+          
+          // Abrir ventana de impresión (desktop)
           const printWindow = window.open('', '_blank', 'width=800,height=600');
           
           if (!printWindow) {
