@@ -59,7 +59,32 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/', routes);
 
 // Servir archivos estáticos del frontend (después de rutas API)
-app.use(express.static(path.join(__dirname, '../../frontend')));
+// Configurar cache-control para evitar cache agresivo en desarrollo
+app.use(express.static(path.join(__dirname, '../../frontend'), {
+  maxAge: 0, // No cache en desarrollo
+  etag: false, // Deshabilitar ETag para evitar cache
+  lastModified: false, // Deshabilitar Last-Modified para evitar cache
+  setHeaders: (res, filePath) => {
+    // Para HTML: no cache
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    // Para CSS/JS: cache corto (5 minutos)
+    else if (filePath.endsWith('.css') || filePath.endsWith('.js')) {
+      res.setHeader('Cache-Control', 'public, max-age=300');
+    }
+    // Para imágenes: cache medio (1 hora)
+    else if (filePath.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+    // Para otros archivos: cache corto (10 minutos)
+    else {
+      res.setHeader('Cache-Control', 'public, max-age=600');
+    }
+  }
+}));
 
 app.use(notFoundHandler);
 app.use(errorHandler);
