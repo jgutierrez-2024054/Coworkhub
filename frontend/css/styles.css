@@ -737,7 +737,14 @@ tr:hover td {
   }
   
   header.topbar nav {
-    display: none; /* Ocultar navegación en móvil, usar menú hamburguesa si es necesario */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: 0.8125rem;
+  }
+  
+  header.topbar nav a {
+    margin-right: 0;
   }
   
   header.topbar .theme-toggle {
