@@ -210,32 +210,38 @@
     await loadSpaces();
     initThemeToggle();
     
-    // Service worker deshabilitado temporalmente para evitar cache
-    // if ('serviceWorker' in navigator) {
-    //   try {
-    //     const registration = await navigator.serviceWorker.register('service-worker.js');
-    //     console.log('[SW] Service Worker registrado:', registration.scope);
-    //     
-    //     // Esperar a que el service worker esté activo
-    //     if (registration.waiting) {
-    //       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-    //     }
-    //     
-    //     // Verificar actualizaciones
-    //     registration.addEventListener('updatefound', () => {
-    //       const newWorker = registration.installing;
-    //       newWorker.addEventListener('statechange', () => {
-    //         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-    //           console.log('[SW] Nueva versión disponible');
-    //         }
-    //       });
-    //     });
-    //   } catch (err) {
-    //     console.error('[SW] Error registrando service worker:', err);
-    //   }
-    // } else {
-    //   console.warn('[SW] Service Worker no soportado en este navegador');
-    // }
+    // Service worker habilitado para PWA
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.register('service-worker.js', {
+          scope: '/'
+        });
+        console.log('[SW] Service Worker registrado:', registration.scope);
+        
+        // Esperar a que el service worker esté activo
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        
+        // Verificar actualizaciones
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[SW] Nueva versión disponible');
+              // Notificar al usuario sobre la actualización
+              if (confirm('Hay una nueva versión disponible. ¿Recargar para actualizar?')) {
+                window.location.reload();
+              }
+            }
+          });
+        });
+      } catch (err) {
+        console.error('[SW] Error registrando service worker:', err);
+      }
+    } else {
+      console.warn('[SW] Service Worker no soportado en este navegador');
+    }
   })();
 </script>
 </body>
