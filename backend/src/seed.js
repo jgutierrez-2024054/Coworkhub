@@ -48,6 +48,13 @@ async function runSeed() {
     hourlyRate: 40,
     active: true,
   });
+  const spaceEvent = await Space.create({
+    name: 'Sala Eventos',
+    type: 'event_room',
+    capacity: 20,
+    hourlyRate: 100,
+    active: true,
+  });
 
   const adminPasswordHash = await hashPassword('Admin1234!');
   const admin = await Member.create({
@@ -104,7 +111,7 @@ async function runSeed() {
       { email: member1.email, password: 'Miembro1234!', plan: planBasico.name },
       { email: member2.email, password: 'Miembro1234!', plan: planPro.name },
     ],
-    spaces: [spaceDesk.name, spaceMeeting.name],
+    spaces: [spaceDesk.name, spaceMeeting.name, spaceEvent.name],
   };
 }
 

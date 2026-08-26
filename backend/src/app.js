@@ -26,7 +26,7 @@ app.use(helmet());
 // CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || ['http://localhost:4000', 'http://localhost:5173', 'http://192.168.0.9:5173', 'http://192.168.100.85:5173', 'https://*.ngrok-free.dev', 'https://*.ngrok.dev', 'https://*.vercel.app'],
+    origin: '*', // Permitir cualquier origen para evitar problemas CORS
     credentials: true, // necesario para que el navegador mande la cookie de sesion
   })
 );
