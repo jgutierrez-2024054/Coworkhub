@@ -412,6 +412,8 @@ main {
   max-width: 1200px; 
   margin: 0 auto; 
   padding: var(--space-8) var(--space-6) var(--space-12); 
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .card {
@@ -556,6 +558,7 @@ button:disabled {
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
   gap: var(--space-6); 
+  width: 100%;
 }
 
 /* Tables */
@@ -717,40 +720,184 @@ tr:hover td {
 
 @media (max-width: 640px) {
   main { 
-    padding: var(--space-5) var(--space-4) var(--space-8); 
+    padding: var(--space-4) var(--space-3) var(--space-6); 
+    max-width: 100%;
   }
+  
   header.topbar { 
     padding: var(--space-3) var(--space-4); 
+    flex-wrap: nowrap;
   }
+  
   header.topbar .brand {
-    font-size: 1.125rem;
+    font-size: 1rem;
+    flex-shrink: 0;
   }
-  header.topbar .brand::before {
-    width: 28px;
-    height: 28px;
+  
+  header.topbar nav {
+    display: none; /* Ocultar navegación en móvil, usar menú hamburguesa si es necesario */
   }
-  header.topbar nav a { 
-    margin-right: var(--space-3); 
-    font-size: 0.8125rem;
+  
+  header.topbar .theme-toggle {
+    padding: var(--space-2);
   }
+  
+  header.topbar .theme-toggle img {
+    width: 24px;
+    height: 24px;
+  }
+  
   .card {
-    padding: var(--space-5);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
   }
+  
   .grid {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
   }
+  
   .filters {
     flex-direction: column;
     gap: var(--space-3);
+    padding: var(--space-4);
   }
+  
+  .filters > div {
+    min-width: 100%;
+  }
+  
+  /* Responsive table */
   table {
     font-size: 0.8125rem;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
+  
   th, td {
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-2) var(--space-3);
   }
+  
   form {
     max-width: 100%;
+  }
+  
+  h1 { 
+    font-size: 1.5rem; 
+  }
+  
+  h2 { 
+    font-size: 1.25rem; 
+  }
+  
+  h3 { 
+    font-size: 1rem; 
+  }
+  
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: var(--space-4);
+  }
+  
+  .tabs button.tab {
+    padding: var(--space-2) var(--space-4);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+  
+  .carousel {
+    height: 180px;
+  }
+  
+  .carousel-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+  
+  .hero {
+    padding: var(--space-8) var(--space-4);
+  }
+  
+  .hero h1 {
+    font-size: 1.5rem;
+  }
+  
+  .hero p {
+    font-size: 1rem;
+  }
+  
+  button {
+    padding: var(--space-3) var(--space-4);
+    font-size: 0.8125rem;
+  }
+  
+  input, select, textarea {
+    padding: var(--space-3);
+    font-size: 0.875rem;
+  }
+  
+  .profile-dropdown {
+    min-width: 180px;
+    right: -8px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  main {
+    padding: var(--space-6) var(--space-5) var(--space-10);
+  }
+  
+  header.topbar {
+    padding: var(--space-3) var(--space-5);
+  }
+  
+  header.topbar .brand {
+    font-size: 1.125rem;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-5);
+  }
+  
+  .card {
+    padding: var(--space-5);
+  }
+  
+  .filters {
+    gap: var(--space-3);
+  }
+  
+  .filters > div {
+    min-width: 200px;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.375rem;
+  }
+  
+  h3 {
+    font-size: 1.0625rem;
+  }
+  
+  .carousel {
+    height: 190px;
+  }
+  
+  .hero {
+    padding: var(--space-10) var(--space-5);
+  }
+  
+  .hero h1 {
+    font-size: 1.75rem;
   }
 }
 
