@@ -88,6 +88,18 @@ function renderNav(user) {
   
   nav.innerHTML = links.join('') + profileMenu;
   
+  // Toggle del menú hamburguesa en móvil
+  const topbar = document.querySelector('.topbar');
+  if (topbar) {
+    topbar.addEventListener('click', (e) => {
+      // Solo si se hace clic en el botón hamburguesa (::before)
+      if (window.getComputedStyle(e.target).content === '"☰"' || 
+          e.target === topbar && window.getComputedStyle(topbar, '::before').cursor === 'pointer') {
+        nav.classList.toggle('active');
+      }
+    });
+  }
+  
   // Toggle del menú desplegable
   const profileToggle = document.getElementById('profileToggle');
   const profileDropdown = document.getElementById('profileDropdown');

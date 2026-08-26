@@ -727,43 +727,61 @@ tr:hover td {
   }
   
   header.topbar { 
-    padding: var(--space-2) var(--space-3); 
-    flex-wrap: wrap;
-    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4); 
+    flex-wrap: nowrap;
+    position: relative;
   }
   
   header.topbar .brand {
-    font-size: 0.875rem;
+    font-size: 1rem;
     flex-shrink: 0;
   }
   
   header.topbar nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    flex-direction: column;
+    gap: 0;
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 100;
+  }
+  
+  header.topbar nav.active {
     display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: var(--space-2);
-    font-size: 0.75rem;
-    width: 100%;
-    padding-bottom: var(--space-1);
   }
   
   header.topbar nav a {
     margin-right: 0;
-    white-space: nowrap;
-    padding: var(--space-1) var(--space-2);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  header.topbar nav a:last-child {
+    border-bottom: none;
+  }
+  
+  /* Botón de menú hamburguesa */
+  header.topbar::before {
+    content: '☰';
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: var(--space-2);
+    margin-right: var(--space-3);
+    display: block;
   }
   
   header.topbar .theme-toggle {
-    padding: var(--space-1);
-    position: absolute;
-    right: var(--space-3);
-    top: var(--space-2);
+    padding: var(--space-2);
   }
   
   header.topbar .theme-toggle img {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
   }
   
   .card {
