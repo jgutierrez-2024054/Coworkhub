@@ -41,7 +41,12 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// Ruta de prueba simple
+app.get('/test-route', (req, res) => res.json({ message: 'Test route works' }));
+
+console.log('Cargando rutas...');
 app.use('/', routes);
+console.log('Rutas cargadas');
 
 // Servir archivos estáticos del frontend (después de rutas API)
 app.use(express.static(path.join(__dirname, '../../frontend')));
