@@ -1,79 +1,79 @@
 # Instrucciones de Despliegue en Render
 
-## Despliegue en Render
+## 1. Crear Base de Datos PostgreSQL en Render
 
-Render es una plataforma más adecuada para aplicaciones Node.js/Express tradicionales que sirven tanto API como archivos estáticos.
+1. Ve a [Render](https://render.com)
+2. Haz clic en "New +" > "PostgreSQL"
+3. Configura:
+   - **Name**: `coworkhub-db`
+   - **Region**: Oregon (US West) (o la misma región que tu Web Service)
+   - **PostgreSQL Version**: 16
+   - **Plan**: Free
+4. Haz clic en "Create Database"
 
-### Paso 1: Crear cuenta en Render
-1. Ve a https://render.com
-2. Crea una cuenta o inicia sesión con GitHub
+## 2. Crear Web Service en Render
 
-### Paso 2: Conectar repositorio
-1. En el dashboard de Render, haz clic en "New +" > "Web Service"
-2. Conecta tu repositorio de GitHub (o sube el código a GitHub primero)
-3. Si no usas Git, puedes usar la opción "Deploy from Git"
+1. En Render, haz clic en "New +" > "Web Service"
+2. Conecta tu repositorio de GitHub
+3. Configura:
+   - **Name**: `coworkhub-api`
+   - **Region**: Oregon (US West)
+   - **Branch**: `main`
+   - **Runtime**: Node 18.x
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+4. Haz clic en "Create Web Service"
 
-### Paso 3: Configurar el Web Service
+## 3. Configurar Variables de Entorno
 
-**Configuración básica:**
-- **Name**: `coworkhub`
-- **Region**: Selecciona la región más cercana a tus usuarios
-- **Branch**: `main` (o tu rama principal)
+En tu Web Service, ve a "Environment Variables" y agrega:
 
-**Build & Deploy:**
-- **Runtime**: `Node`
-- **Build Command**: `npm install`
-- **Start Command**: `npm start`
-
-**Environment Variables:**
-Agrega estas variables en la sección "Environment Variables":
-
-```
-NODE_ENV=production
-PORT=4000
-DB_HOST=ep-dark-dust-ayj43bxy-pooler.c-5.us-east-2.aws.neon.tech
-DB_PORT=5432
-DB_NAME=neondb
-DB_USER=neondb_owner
-DB_PASSWORD=npg_fuQVA7Nzi1yY
-JWT_SECRET=Admin123COW
-JWT_EXPIRES_IN=8h
-COOKIE_NAME=cwh_session
-CLIENT_ORIGIN=https://tu-url-render.onrender.com
-```
-
-**Nota importante:** Después del primer despliegue, Render te dará una URL. Actualiza `CLIENT_ORIGIN` con esa URL y haz un redeploy.
-
-### Paso 4: Desplegar
-1. Haz clic en "Create Web Service"
-2. Render construirá y desplegará tu aplicación
-3. Espera a que el estado sea "Live"
-
-### Paso 5: Ejecutar seed de datos
-Después del despliegue, necesitas ejecutar el seed para poblar la base de datos:
-
-1. Ve a la sección "Shell" en Render (en tu web service)
-2. Ejecuta: `npm run seed`
-3. Esto creará el usuario admin, planes, espacios y reservas de prueba
-
-### Paso 6: Verificar despliegue
-1. Abre la URL de tu aplicación (ej: https://coworkhub.onrender.com)
-2. Prueba iniciar sesión con:
-   - Email: `admin@coworkhub.test`
-   - Contraseña: `Admin1234!`
-
-### Variables de entorno requeridas
-- `NODE_ENV`: `production`
-- `PORT`: `4000`
-- `DB_HOST`: Host de tu base de datos Neon
+**Variables de Base de Datos (obtenidas de tu base de datos Render):**
+- `DB_HOST`: El host de tu base de datos Render
 - `DB_PORT`: `5432`
-- `DB_NAME`: Nombre de la base de datos
-- `DB_USER`: Usuario de la base de datos
-- `DB_PASSWORD`: Contraseña de la base de datos
-- `JWT_SECRET`: Secreto para tokens JWT
+- `DB_NAME`: El nombre de la base de datos
+- `DB_USER`: El usuario de la base de datos
+- `DB_PASSWORD`: El password de la base de datos
+
+**Otras Variables:**
+- `JWT_SECRET`: Un secreto largo y aleatorio para JWT
 - `JWT_EXPIRES_IN`: `8h`
 - `COOKIE_NAME`: `cwh_session`
-- `CLIENT_ORIGIN`: URL de tu aplicación en Render
+- `CLIENT_ORIGIN`: La URL de tu frontend en producción
+- `NODE_ENV`: `production`
+
+## 4. Conectar Base de Datos al Web Service
+
+1. Ve a tu Web Service
+2. En la sección "Environment", busca "Databases"
+3. Haz clic en "Add Database"
+4. Selecciona tu base de datos `coworkhub-db`
+5. Render configurará automáticamente las variables de conexión
+
+## 5. Desplegar
+
+1. Haz un redeploy manual: "Manual Deploy" > "Deploy latest commit"
+2. Espera a que el despliegue termine
+3. El servicio debería estar "Live"
+
+## 6. Ejecutar Seed (Datos de Prueba)
+
+1. Cuando el despliegue esté "Live", ve a la sección "Shell" de tu Web Service
+2. Ejecuta: `npm run seed`
+3. Esto creará los datos de prueba en la base de datos
+
+## 7. Verificar
+
+1. Ve a la URL de tu Web Service
+2. Prueba la API: `https://tu-url-render.com/docs` (Swagger)
+3. Verifica que los endpoints funcionen correctamente
+
+## Troubleshooting
+
+Si tienes problemas de conexión:
+- Asegúrate de que la base de datos y el Web Service estén en la misma región
+- Verifica que las variables de entorno estén configuradas correctamente
+- Revisa los logs en el dashboard de Render
 
 ### Diferencias con Vercel
 - Render usa servidores tradicionales (no serverless)
