@@ -21,32 +21,27 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Cabeceras de seguridad (mitiga varios vectores: clickjacking, sniffing, etc.)
-// app.use(helmet()); // Temporalmente deshabilitado para pruebas en producción
+app.use(helmet());
 
-// CORS - Temporalmente deshabilitado para pruebas en producción
-// app.use(
-//   cors({
-//     origin: process.env.CLIENT_ORIGIN || ['http://localhost:4000', 'http://localhost:5173', 'http://192.168.0.9:5173', 'http://192.168.100.85:5173', 'https://*.ngrok-free.dev', 'https://*.ngrok.dev', 'https://*.vercel.app'],
-//     credentials: true, // necesario para que el navegador mande la cookie de sesion
-//   })
-// );
+// CORS
+app.use(
+  cors({
+    origin: process.env.CLIENT_ORIGIN || ['http://localhost:4000', 'http://localhost:5173', 'http://192.168.0.9:5173', 'http://192.168.100.85:5173', 'https://*.ngrok-free.dev', 'https://*.ngrok.dev', 'https://*.vercel.app'],
+    credentials: true, // necesario para que el navegador mande la cookie de sesion
+  })
+);
 
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
-// app.use(sanitizeInput); // Temporalmente deshabilitado para pruebas en producción
-// app.use(generalLimiter); // Temporalmente deshabilitado para pruebas en producción
-// app.use(verifyCsrf); // Temporalmente deshabilitado para pruebas en producción
+app.use(sanitizeInput);
+app.use(generalLimiter);
+app.use(verifyCsrf);
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-// Ruta de prueba simple
-app.get('/test-route', (req, res) => res.json({ message: 'Test route works' }));
-
-console.log('Cargando rutas...');
-app.use('/', routes);
-console.log('Rutas cargadas');
+app.use('/api', routes);
 
 // Servir archivos estáticos del frontend (después de rutas API)
 app.use(express.static(path.join(__dirname, '../../frontend')));

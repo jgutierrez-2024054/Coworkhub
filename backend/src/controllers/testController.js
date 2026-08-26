@@ -6,10 +6,9 @@ const runSeed = require('../seed');
 const { ok, fail } = require('../helpers/response');
 
 async function seed(req, res, next) {
-  // Temporalmente habilitado para crear datos de prueba en producción
-  // if (process.env.NODE_ENV === 'production') {
-  //   return fail(res, 403, 'Seed deshabilitado en produccion.');
-  // }
+  if (process.env.NODE_ENV === 'production') {
+    return fail(res, 403, 'Seed deshabilitado en produccion.');
+  }
   try {
     const summary = await runSeed();
     return ok(res, summary);
